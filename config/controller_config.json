@@ -1,0 +1,12 @@
+{
+  "controller": {
+    "name": "Xbox One S Controller",
+    "deadzone": 0.12
+  },
+  "safety": {
+    "require_controller_connection": true,
+    "command_timeout_ms": 250,
+    "motor_output_enabled": false
+  },
+  "_note": "Planning values only; no application currently loads this file."
+}
