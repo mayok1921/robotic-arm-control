@@ -1,17 +1,25 @@
 # Hardware inventory
 
-## Available
-- Orange Pi Zero 2W running Armbian Linux
-- Wired Xbox One S controller
-- Computer used for development
+## Available and tested
 
-## Not yet selected
-- Robotic arm and actuators
-- Motor drivers and power supply
-- Arduino (optional, depending on the control architecture)
-- Communication adapter or cable for reliable offline deployment
+- Orange Pi Zero 2W running Armbian Linux
+- Xbox wireless controller (previously tested over USB and now Bluetooth)
+- ELEGOO Arduino UNO R3 from the starter kit
+- SG90 micro servo (single unloaded servo tested)
+- USB hub connected to Orange Pi USB/OTG port
+- Jumper wires and USB cable
+- Windows computer for development
+
+## Not yet accessible or finalized
+
+- Final robotic arm servos/actuators and their dedicated power supply
+- Motor driver/controller selection for the final robot
+- A tested offline laptop-to-Orange-Pi software update connection
 
 ## Important
-The Orange Pi's USB/OTG connector is being investigated for a direct wired computer connection. USB gadget support has **not** been verified on the installed Armbian kernel. Do not assume that plugging a USB-C cable into the computer will establish SSH.
 
-Verify connector power requirements and USB host/device mode before connecting hardware. Do not power motors directly from GPIO pins.
+The Orange Pi USB/OTG port currently **hosts a USB hub** for devices including the Arduino. The same port cannot simultaneously host the hub and function as a USB device/gadget for a laptop under the current arrangement.
+
+Direct USB gadget networking to Windows has **not been verified**. Wi-Fi is used for current SSH/VS Code development, but the demonstrated controller-to-servo operation itself does not need Wi-Fi.
+
+Final actuator wiring and power design must be validated separately. See [verified SG90 demo guide](servo_demo_guide.md).
