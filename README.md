@@ -1,45 +1,50 @@
 # Robotic Arm Control System
 
-A robotics project focused on developing a manually controlled robotic arm using an Orange Pi Zero 2W and an Xbox One S controller. Python will be used to process controller inputs and eventually translate them into robotic arm movements.
+Prototype of a Bluetooth Xbox-controller-operated robotic arm control system using **Orange Pi Zero 2W**, **Python/Pygame**, and an **Arduino UNO R3** as a temporary low-level servo controller.
 
-## Hardware
-- Orange Pi Zero 2W
-- Xbox One S Controller (USB)
-- Robotic arm hardware (to be determined)
+## Verified demonstration — October 13, 2026
+
+**Xbox wireless controller → Bluetooth → Orange Pi Zero 2W → USB serial → Arduino UNO R3 → SG90 servo**
+
+The joystick successfully moved the unloaded SG90 servo through the full chain.
+
+## Reproduce the demo
+
+**[Step-by-step setup, wiring, commands, and test results](docs/servo_demo_guide.md)**
+
+## Hardware currently used
+
+- Orange Pi Zero 2W running Armbian Linux
+- Xbox wireless controller connected over Bluetooth
+- Arduino UNO R3 connected through the Orange Pi USB hub
+- SG90 micro servo with three jumper wires
+
+The eventual robotic arm actuators and motor driver are not yet selected/accessible.
 
 ## Software
-- Armbian Linux
-- Python 3.14.4
-- Pygame 2.6.1
 
-## Current Progress
+- Python 3.14.4, Pygame 2.6.1, PySerial 3.5 (tested environment)
+- Arduino IDE and Servo library
+- Armbian Linux; SSH/VS Code used for development over Wi-Fi
 
-**October 11, 2026 — Initial Setup**
+## Project files
 
-Successfully configured Armbian Linux on the Orange Pi Zero 2W and established communication with an Xbox One S controller through USB. Verified controller functionality using Linux joystick testing utilities and developed an initial Python program using Pygame.
+- [servo_control.py](servo_control.py) — tested Python joystick-to-servo demo
+- [arduino/servo_serial/servo_serial.ino](arduino/servo_serial/servo_serial.ino) — tested Arduino serial/servo sketch
+- [controller_test.py](controller_test.py) — earlier controller detection test
+- [Servo demonstration guide](docs/servo_demo_guide.md) — reproducible wiring, setup, and testing
+- [Development log](docs/development_log.md) — milestones and observations
+- [Wiring notes](docs/wiring.md) and [hardware inventory](docs/hardware.md)
 
-The program successfully detected:
-- 1 Xbox One S controller
-- 6 analog axes
-- 11 buttons
+## Roadmap
 
-Controller detection is complete. Real-time input processing and robotic arm integration are still in development.
+1. ~~Configure Armbian and verify Bluetooth controller input.~~
+2. ~~Move an unloaded SG90 using Arduino, then Orange Pi USB serial.~~
+3. ~~Move SG90 using Xbox joystick through the full system.~~
+4. Refine parsing, safety behavior, and controller mapping; test stability.
+5. Set up automatic startup without a laptop or Wi-Fi for normal operation.
+6. Establish a reliable offline code-update workflow.
+7. Select the final robotic arm motors, drivers, and suitable power.
+8. Integrate and validate the complete arm.
 
-## Project Files
-
-- [controller_test.py](controller_test.py) — Initial Python program for detecting connected controllers.
-- [Development Log](docs/development_log.md) — Documentation of project progress and testing.
-
-## Future Development
-
-1. Implement real-time controller input monitoring.
-2. Map controller inputs to robotic arm joint movements.
-3. Select and integrate robotic arm hardware.
-4. Develop motor control and safety features.
-5. Test and evaluate robotic arm performance.
-
-## Project Status
-
-**In Development — Phase 1: Controller Integration**
-
-The initial software environment and controller detection have been successfully established. The next objective is to process analog stick movements and button presses in real time.
+**Status:** Working bench prototype; not yet a safe or finished robotic arm system.
