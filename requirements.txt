@@ -1,5 +1,6 @@
-# Controller testing on Armbian.
-# Prefer the distro package when available:
-#   sudo apt install python3-pygame
-# Existing tested installation: Pygame 2.6.1.
-# No pip dependencies are required for the current controller_test.py.
+# Orange Pi Python dependencies for the verified SG90 demonstration.
+# Environment tested: Pygame 2.6.1, PySerial 3.5.
+# On Armbian, distro packages may be preferred:
+#   sudo apt install python3-pygame python3-serial
+pygame==2.6.1
+pyserial==3.5
