@@ -1,12 +1,22 @@
 # Wiring notes
 
-No robotic arm, motor driver, or Arduino wiring has been selected or verified.
+## Verified bench prototype — October 13, 2026
 
-Before creating a wiring diagram, record:
-- Board model and connector pinouts from official documentation
-- Actuator voltage, peak/stall current, and motor-driver ratings
-- Logic voltage compatibility (including Orange Pi GPIO voltage)
-- Common-ground and power-isolation requirements
-- Fusing, emergency-stop behavior, and physical joint limits
+Single unloaded SG90 servo attached to Arduino UNO R3:
 
-Do not connect motors directly to Orange Pi or Arduino GPIO pins. This document will be updated after hardware selection.
+| SG90 wire | Arduino UNO |
+| --- | --- |
+| Brown | GND |
+| Red | 5V |
+| Orange | D9 |
+
+- Arduino UNO R3 connects by USB to a hub attached to Orange Pi Zero 2W.
+- Arduino appears on the Orange Pi as `/dev/ttyACM0` in the tested setup (may vary).
+- Xbox wireless controller communicates with Orange Pi over Bluetooth.
+- Complete wiring, code and tests: [servo demo guide](servo_demo_guide.md).
+
+**Safety:** Powering one unloaded SG90 from the Arduino 5V pin was acceptable for this brief bench test; do not extrapolate to loaded or multiple servos. Never connect a motor directly to an Orange Pi GPIO pin. Choose dedicated power, drivers, shared grounding and current protection for future actuators.
+
+## Future robotic arm wiring (not yet verified)
+
+Before creating final wiring diagrams, record motor models, voltage and stall current, driver specifications, logic-level compatibility, shared-ground requirements, limit-switch/safety circuits and supply protection.
