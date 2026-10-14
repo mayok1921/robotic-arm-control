@@ -35,3 +35,21 @@ Configured Armbian Linux on Orange Pi Zero 2W. Xbox controller detected over USB
 **Still unverified:** Windows laptop reboot IP persistence; second laptop onboarding; complete Orange Pi power cycle and extended simultaneous-use stability; automatic startup of the servo controller itself.
 
 **Next development target:** improve joystick-to-servo control robustness, safety, and precision before additional actuators.
+
+## October 13, 2026 — Extended servo exercise, joystick drift, and memory cleanup
+
+- Continued testing the **unloaded SG90** with Bluetooth-connected **Xbox Series X Controller**, Orange Pi / Pygame, and Arduino serial control. The newer velocity-based `servo_control.py` commands **45–135°**, changing servo angle proportionally to joystick displacement and elapsed time. The controller and servo moved smoothly for repeated sweeps, but the user observed that the physical servo sometimes **stops moving after a while**. This behavior remains **unresolved**; Python angle logs indicate commands sent, not measured physical position.
+- Direct Pygame axis test showed left joystick values reaching approximately `-1.0` and `+1.0`, with apparent resting offset intermittently about `0.09–0.16`. The original `deadzone = 0.12` allowed potential drift; a local adjustment to `0.20` was proposed and subsequent file upload/test attempted, **but this log does not independently establish the exact deployed value**. Confirm the deployed setting with `grep '^deadzone =' ~/robotic_arm/servo_control.py`.
+- Memory investigation on Orange Pi before cleanup: **970 MiB RAM total, 284 MiB available; 460/485 MiB swap used**. `ps aux --sort=-rss` identified leftover VS Code Remote-SSH / Pylance processes (Pylance ~221,164 KiB RSS, extension host ~76,972 KiB RSS). Stopped unused remote VS Code processes with `pkill -f '/home/mayok1921/.vscode-server/'`; after cleanup **667 MiB RAM available, 63 MiB swap used**. Continue coding locally on Windows VS Code and transferring over USB SCP; use lightweight SSH terminal to run.
+- Retest with available memory improved showed mostly continuous Python command progression, with occasional multi-degree jumps. Because the control loop is time-based, skipped integer angle values **do not alone prove malfunction**. **Physical servo periodically ceasing motion remains unresolved**; may involve power distribution, Arduino/USB serial operation, or servo behavior.
+- Current bench wiring: servo powered by **Arduino UNO 5V**, Arduino connected to Orange Pi USB hub. Potential USB/hub supply limitation is **a hypothesis, not confirmed**. User discussed a wall adapter for Arduino or a breadboard and 9V battery; **no power wiring change is reported/tested**. Do **not** apply 9V directly to SG90. For an independent servo supply, use appropriately regulated ~5V power with sufficient current, a common GND with Arduino, and **do not tie separate 5V sources together**. A barrel-jack adapter alone does not guarantee sufficient servo current.
+
+### Next session
+
+1. With servo unpowered, review safe power wiring and verify any supply's label/rating before connecting it.
+2. Reproduce motor stopping while checking whether terminal angles continue to change and whether it resumes after resting; stop if heating, buzzing or stalling.
+3. Check Arduino serial/device reconnection and power quality as needed; avoid assuming Python log lines are actual servo feedback.
+4. Verify which `deadzone` setting is deployed, and commit/push any intended local changes separately.
+5. Bluetooth `bluetooth_pair.py` prototype was created locally, transferred over USB and tested for basic discovery; selecting by **name or number** is intended, but pairing a never-before-paired controller is **not yet verified**. See [Bluetooth pairing design](bluetooth_pairing_design.md).
+
+**Robot startup and full safety features are still pending.**
