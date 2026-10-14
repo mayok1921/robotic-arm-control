@@ -2,23 +2,36 @@
 
 ## October 11, 2026 — Initial setup
 
-Configured Armbian Linux on an Orange Pi Zero 2W and connected an Xbox One S controller by USB. Verified controller input using `jstest /dev/input/js1`. Installed Pygame 2.6.1; [controller_test.py](../controller_test.py) detected one controller, 6 axes and 11 buttons.
+Configured Armbian Linux on Orange Pi Zero 2W. Xbox controller detected over USB with `jstest /dev/input/js1`; Pygame 2.6.1 and [controller_test.py](../controller_test.py) verified controller input.
 
 ## October 12–13, 2026 — Remote development and Bluetooth
 
-- Established SSH access and VS Code Remote-SSH from Windows over the local Wi-Fi network.
-- Paired and connected the Xbox controller via Bluetooth and confirmed reconnection. Bluetooth input reported 6 axes and 16 buttons, different from USB.
-- Began testing live inputs; D-pad mapping still needs verification.
-- Experienced intermittent HDMI/SSH hangs while VS Code Remote-SSH was running. Memory inspection showed increased RAM/ZRAM usage, but no definitive cause was established. Do not consider stability resolved.
+- Established SSH and VS Code Remote-SSH over local Wi-Fi.
+- Paired Xbox controller over Bluetooth and tested controller input. Bluetooth input mapping differs from USB; D-pad mapping needs verification.
+- Experienced intermittent display/Remote-SSH freezes; RAM/ZRAM usage increased but root cause was not established.
 
 ## October 13, 2026 — First complete wireless servo demonstration
 
-- Used the existing ELEGOO UNO R3 and small SG90 servo, unloaded.
-- Confirmed direct Arduino movement via a 45°/90°/135° sweep test.
-- Connected Arduino to Orange Pi USB hub; serial interface appeared at `/dev/ttyACM0`.
-- Installed and verified PySerial 3.5.
-- Uploaded serial-command Arduino sketch. Confirmed servo movement when sending a serial angle from the Orange Pi.
-- Ran [servo_control.py](../servo_control.py) with the Bluetooth Xbox controller. **Moving the left joystick moved the SG90 servo successfully.**
-- Recorded a [reproduction guide](servo_demo_guide.md) and saved the working Arduino and Python programs.
+- ELEGOO UNO R3 drove an unloaded SG90 at 45°/90°/135°.
+- Orange Pi identified Arduino as `/dev/ttyACM0` via USB hub; PySerial 3.5 installed.
+- Serial commands from Orange Pi moved servo.
+- [servo_control.py](../servo_control.py) mapped Xbox Bluetooth left joystick to servo position; full chain verified.
+- Saved tested Arduino and Python programs and [servo guide](servo_demo_guide.md).
 
-**Next:** Preserve this working baseline, then refine safety/robustness, offline deployment, and automatic startup. Final arm hardware not yet integrated.
+## October 13, 2026 — Portable Wi-Fi-free development connection verified
+
+- Initial Orange Pi hotspot attempt failed: `unisoc_wifi` advertised AP but `wpa_supplicant` reported `Failed to initialize AP interface`; returned to Wi-Fi during debugging.
+- USB Ethernet gadget initially stalled at `usb0 NO-CARRIER`, UDC `not attached`, and Windows detected nothing. `g_ether` and the device-tree peripheral configuration alone were insufficient.
+- **Key breakthrough:** swapping which physical Orange Pi USB-C ports carried the laptop and USB hub. The functional gadget-capable USB0 port had earlier been mistaken for a power-only port. Gadget UDC changed to `configured`.
+- Windows then enumerated `USB\\VID_0525&PID_A4A2` as `USB Serial Device (COM7)`, an incorrect class binding.
+- Windows built-in `netrndis.inf` registration did not fix binding. Matching signed RNDIS package (`rndis.inf`/`rndis.cat`) extracted from Microsoft Update Catalog; `pnputil /add-driver ... /install` confirmed **driver package installed on device**.
+- `Get-NetAdapter` listed **Ethernet 6 — USB Ethernet/RNDIS Gadget — Up**.
+- Windows USB IPv4 `192.168.7.1/24`; Orange Pi `usb0` `192.168.7.2/24`. Windows ping: 4/4 replies, 0% loss, sub-millisecond latency. Direct USB SSH succeeded; VS Code Remote-SSH connected to Linux on `192.168.7.2`.
+- Enabled `g_ether` loading via `/etc/modules-load.d/robotarm-usb.conf` and systemd `robotarm-usb.service` setting the USB interface address. Service reported **active** and remote access reconnected after Orange Pi reboot.
+- Disabled Orange Pi Wi-Fi using `sudo nmcli radio wifi off`; `wlan0` unavailable but SSH terminal still responded to `hostname`, confirming Wi-Fi-free remote access.
+- Arduino remained connected through USB hub on separate USB port throughout working laptop USB development connection.
+- Full instructions: [portable USB development guide](usb_development_setup.md).
+
+**Still unverified:** Windows laptop reboot IP persistence; second laptop onboarding; complete Orange Pi power cycle and extended simultaneous-use stability; automatic startup of the servo controller itself.
+
+**Next development target:** improve joystick-to-servo control robustness, safety, and precision before additional actuators.
