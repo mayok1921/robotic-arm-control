@@ -1,0 +1,14 @@
+[Unit]
+Description=Robot Arm USB Network
+After=systemd-modules-load.service
+Requires=sys-subsystem-net-devices-usb0.device
+After=sys-subsystem-net-devices-usb0.device
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ip link set usb0 up
+ExecStart=/usr/sbin/ip addr replace 192.168.7.2/24 dev usb0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
