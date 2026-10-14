@@ -1,22 +1,33 @@
 # Wiring notes
 
-## Verified bench prototype — October 13, 2026
+## Verified bench servo circuit
 
-Single unloaded SG90 servo attached to Arduino UNO R3:
-
-| SG90 wire | Arduino UNO |
+| SG90 wire | Arduino UNO R3 |
 | --- | --- |
 | Brown | GND |
 | Red | 5V |
 | Orange | D9 |
 
-- Arduino UNO R3 connects by USB to a hub attached to Orange Pi Zero 2W.
-- Arduino appears on the Orange Pi as `/dev/ttyACM0` in the tested setup (may vary).
-- Xbox wireless controller communicates with Orange Pi over Bluetooth.
-- Complete wiring, code and tests: [servo demo guide](servo_demo_guide.md).
+Used for **one unloaded SG90 servo only**. Final loaded/multiple-actuator systems require a suitable external motor supply, current protection and common ground where required. Never connect motor power directly to Orange Pi GPIO.
 
-**Safety:** Powering one unloaded SG90 from the Arduino 5V pin was acceptable for this brief bench test; do not extrapolate to loaded or multiple servos. Never connect a motor directly to an Orange Pi GPIO pin. Choose dedicated power, drivers, shared grounding and current protection for future actuators.
+## Verified USB connections
 
-## Future robotic arm wiring (not yet verified)
+```text
+Windows laptop (VS Code + RNDIS, 192.168.7.1)
+     |
+     | USB data cable (g_ether network)
+     v
+Orange Pi Zero 2W USB0 (usb0, 192.168.7.2)
+     |
+     +-- Bluetooth <-- Xbox controller
+     |
+     +-- USB1 (host) --> USB hub --> Arduino UNO R3 --> SG90 on D9
+```
 
-Before creating final wiring diagrams, record motor models, voltage and stall current, driver specifications, logic-level compatibility, shared-ground requirements, limit-switch/safety circuits and supply protection.
+This **simultaneous USB arrangement was observed working**. USB0 and USB1 should not be treated as interchangeable. Follow the [portable USB setup](usb_development_setup.md) for host drivers, software and tested connection.
+
+The Arduino serial port was `/dev/ttyACM0` during testing but may change after reconnection. For servo code/wiring see [servo demonstration guide](servo_demo_guide.md).
+
+## Future robotic arm wiring (unverified)
+
+Record motor models, rated/stall currents, control signal requirements, driver specifications, cable routing, emergency stop, limits and grounding before final construction.
