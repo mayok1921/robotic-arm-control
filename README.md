@@ -50,6 +50,7 @@ robotic-arm-control/
 - [Experimental modular Python](src/README.md) — new isolated controller design and limitations
 - [Integration plan](docs/integration_plan.md) — how to transfer to the group's robot
 - [Preliminary bill of materials](docs/bill_of_materials.md) — reuse/buy/verify decisions
+- [Electrical load assessment](docs/electrical_load_plan.md) — preliminary 24V supply, motor current and lower-voltage rail calculations
 - [Bluetooth pairing plan](docs/bluetooth_pairing_design.md)
 - [Development log](docs/development_log.md)
 
@@ -67,7 +68,7 @@ Use **Windows VS Code locally**, not VS Code Remote-SSH. The Orange Pi has only 
 
 1. Verify bench reliability and power distribution without overinvesting in SG90 demonstration hardware.
 2. Test v2 serial parsing, acknowledgement, deadzone and controller-disconnection behavior on **one unloaded servo**.
-3. Identify the **group's Arduino model**, **existing motor and driver models**, voltage/current, available feedback and mechanical limits.
+3. Verify the predecessor report's **DOCYKE S550-class servos**, smaller servos, reported 24V/50A supply and control hardware against actual installed labels; estimate simultaneous electrical load.
 4. Add an actuator-independent multi-joint interface, appropriate hardware watchdog, e-stop, joint limits and safe boot behavior.
 5. Select one appropriately protected main power supply and dedicated SBC based on actual robot requirements, then integrate one axis at a time.
 6. Configure safe automatic startup and reconnection after failure handling is proven.
