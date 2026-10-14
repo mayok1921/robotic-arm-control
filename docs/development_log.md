@@ -53,3 +53,11 @@ Configured Armbian Linux on Orange Pi Zero 2W. Xbox controller detected over USB
 5. Bluetooth `bluetooth_pair.py` prototype was created locally, transferred over USB and tested for basic discovery; selecting by **name or number** is intended, but pairing a never-before-paired controller is **not yet verified**. See [Bluetooth pairing design](bluetooth_pairing_design.md).
 
 **Robot startup and full safety features are still pending.**
+
+## October 13, 2026 — Repository architecture update (experimental)
+
+- Preserved the tested root `servo_control.py` and `arduino/servo_serial/servo_serial.ino` as a compatible legacy pair; **no deployed hardware or proven working code was modified**.
+- Added `src/` for input, motion, acknowledged serial transport, and prototype runner; `config/settings.json` for experimental 20% deadzone and other parameters; `arduino/servo_serial_v2/` for stricter `SET <angle>` input validation; `tests/test_motion.py`; USB-only PowerShell deploy script and new documentation.
+- **New firmware and runner are untested on hardware and must be tested as a matching pair**: old ASCII angle protocol and new `SET` acknowledgement protocol are incompatible. Static/pure tests do not establish safety of a loaded arm.
+- Main robot scope: group already owns an Arduino and motors, and the personal bench Orange Pi/Arduino/SG90 are not planned as final hardware. Purchasing decisions remain blocked on existing motor/driver model numbers and power specifications.
+- Local Windows VS Code + SCP + ordinary USB SSH remains the recommended development approach; old Remote-SSH usage is recorded only for historical context.
