@@ -1,50 +1,52 @@
 # Robotic Arm Control System
 
-Prototype of a Bluetooth Xbox-controller-operated robotic arm control system using **Orange Pi Zero 2W**, **Python/Pygame**, and an **Arduino UNO R3** as a temporary low-level servo controller.
+Portable robotic arm control prototype using an **Orange Pi Zero 2W**, an **Xbox wireless controller**, **Python/Pygame**, and an **Arduino UNO R3** driving a single test SG90 servo.
 
-## Verified demonstration — October 13, 2026
+## Verified milestones — October 13, 2026
 
-**Xbox wireless controller → Bluetooth → Orange Pi Zero 2W → USB serial → Arduino UNO R3 → SG90 servo**
+1. **Xbox controller → Bluetooth → Orange Pi → USB serial → Arduino → SG90 servo**: left joystick successfully moved the unloaded servo.
+2. **Windows laptop → USB → Orange Pi Zero 2W → SSH/VS Code**: direct USB networking worked without Orange Pi Wi-Fi, and reconnected after an Orange Pi reboot.
+3. **Concurrent connections**: Laptop connected via USB0 while the Arduino remained connected through a USB hub on USB1.
 
-The joystick successfully moved the unloaded SG90 servo through the full chain.
+## Start here
 
-## Reproduce the demo
+- **[Portable, Wi-Fi-free USB development setup](docs/usb_development_setup.md)** — correct USB ports, Windows RNDIS driver workaround, static IPs, SSH, VS Code, boot persistence and troubleshooting
+- **[Servo-control demonstration](docs/servo_demo_guide.md)** — SG90 wiring, Arduino firmware, Python joystick script, test instructions
+- **[Development log](docs/development_log.md)** — decisions, verified results, and limitations
 
-**[Step-by-step setup, wiring, commands, and test results](docs/servo_demo_guide.md)**
+## Architecture
 
-## Hardware currently used
+**Controller (Bluetooth) → Orange Pi (Python/Pygame) → USB serial → Arduino UNO R3 (Servo library) → SG90 servo**
 
-- Orange Pi Zero 2W running Armbian Linux
-- Xbox wireless controller connected over Bluetooth
-- Arduino UNO R3 connected through the Orange Pi USB hub
-- SG90 micro servo with three jumper wires
+A development laptop can connect **independently through the other Orange Pi USB-C port** using USB networking and Remote-SSH. The Orange Pi need not join an external Wi-Fi network to be programmed in the tested setup.
 
-The eventual robotic arm actuators and motor driver are not yet selected/accessible.
+## Hardware and software
 
-## Software
+- Orange Pi Zero 2W, Armbian Linux (observed kernel `6.18.55-current-sunxi64`)
+- Xbox wireless controller
+- ELEGOO Arduino UNO R3, SG90 test servo, USB hub and jumper wires
+- Windows computer with VS Code Remote-SSH
+- Python 3.14.4, Pygame 2.6.1, PySerial 3.5 (observed environment)
 
-- Python 3.14.4, Pygame 2.6.1, PySerial 3.5 (tested environment)
-- Arduino IDE and Servo library
-- Armbian Linux; SSH/VS Code used for development over Wi-Fi
+Final robotic arm motors, drivers and motor power supply remain to be chosen or accessed.
 
-## Project files
+## Files
 
-- [servo_control.py](servo_control.py) — tested Python joystick-to-servo demo
-- [arduino/servo_serial/servo_serial.ino](arduino/servo_serial/servo_serial.ino) — tested Arduino serial/servo sketch
-- [controller_test.py](controller_test.py) — earlier controller detection test
-- [Servo demonstration guide](docs/servo_demo_guide.md) — reproducible wiring, setup, and testing
-- [Development log](docs/development_log.md) — milestones and observations
-- [Wiring notes](docs/wiring.md) and [hardware inventory](docs/hardware.md)
+- [servo_control.py](servo_control.py) — tested joystick-to-servo demo
+- [arduino/servo_serial/servo_serial.ino](arduino/servo_serial/servo_serial.ino) — tested serial-command Arduino sketch
+- [controller_test.py](controller_test.py) — earlier controller test
+- [scripts/robotarm-usb.service](scripts/robotarm-usb.service) — copy of tested automatic USB networking service
+- [docs/hardware.md](docs/hardware.md) and [docs/wiring.md](docs/wiring.md) — hardware and wiring notes
 
 ## Roadmap
 
-1. ~~Configure Armbian and verify Bluetooth controller input.~~
-2. ~~Move an unloaded SG90 using Arduino, then Orange Pi USB serial.~~
-3. ~~Move SG90 using Xbox joystick through the full system.~~
-4. Refine parsing, safety behavior, and controller mapping; test stability.
-5. Set up automatic startup without a laptop or Wi-Fi for normal operation.
-6. Establish a reliable offline code-update workflow.
-7. Select the final robotic arm motors, drivers, and suitable power.
-8. Integrate and validate the complete arm.
+1. ~~Set up Armbian and Xbox controller detection.~~
+2. ~~Verify serial control of unloaded SG90 from Orange Pi through Arduino.~~
+3. ~~Move SG90 with Bluetooth Xbox joystick.~~
+4. ~~Establish and test laptop-to-Orange-Pi USB networking without Orange Pi Wi-Fi, including reboot.~~
+5. **Next: improve servo command parsing, failsafes and smooth joystick control.**
+6. Validate offline access after complete power cycles and Windows reboot; test second developer's laptop.
+7. Configure safe automatic startup of robotic-arm controller.
+8. Integrate actual arm actuators and properly rated motor power supply, then validate mechanical safety.
 
-**Status:** Working bench prototype; not yet a safe or finished robotic arm system.
+**Status:** Working portable development link and bench servo-control prototype. Not a finished or safety-qualified robotic arm.
