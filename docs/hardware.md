@@ -1,29 +1,27 @@
-# Hardware inventory and port assignments
+# Hardware inventory and proposed robot integration
 
-## Available and verified
+## Verified personal bench hardware (not intended for group robot installation)
 
-- Orange Pi Zero 2W running Armbian Linux
-- Xbox wireless controller paired over Bluetooth
-- ELEGOO Arduino UNO R3, accessible through Orange Pi USB hub (`/dev/ttyACM0` during testing)
-- SG90 micro servo, tested unloaded with Arduino
-- USB hub, data cable, jumper wires
-- Windows laptop using USB Ethernet/RNDIS Gadget and VS Code Remote-SSH
+- Orange Pi Zero 2W (1GB) with Armbian Linux
+- Xbox wireless controller over Bluetooth
+- ELEGOO Arduino UNO R3, USB serial `/dev/ttyACM0` during testing
+- Single unloaded SG90 servo, with orange signal on Arduino D9, red to Arduino 5V and brown to GND for bench only
+- USB hub, data cables, jumper wires
+- Windows laptop using local VS Code and USB Ethernet/RNDIS + SSH/SCP
 
-## Crucial USB port discovery
+## USB port roles
 
-**Both Orange Pi USB-C ports are distinct.** The tested configuration uses:
+- **USB0 (USB gadget):** USB-C connection to laptop; `usb0` IP `192.168.7.2/24`
+- **USB1 (USB host):** USB hub to Arduino
 
-- **USB0 (gadget/peripheral-capable):** direct data cable to Windows laptop. `g_ether` on Orange Pi, RNDIS adapter on Windows, USB SSH.
-- **USB1 (host):** USB hub connecting Arduino and other host peripherals.
+Do not assume the two connectors are interchangeable or that all multi-source powering combinations are safe. See [USB guide](usb_development_setup.md).
 
-The port originally assumed to be power-only proved to be the functional gadget connection in the user's setup. The Arduino and Windows USB SSH links worked concurrently. Review the Orange Pi board labels and safe power supply wiring; connecting multiple power sources must follow the board's electrical specifications.
+## Group robot
 
-Full verified USB procedure: [portable setup](usb_development_setup.md).
+- Existing Arduino: **model to be identified**
+- Existing robot motors: **models and quantities to be identified; reuse intended**
+- Existing motor drivers, sensors and power supply: **unknown**
+- Dedicated SBC: likely Orange Pi Zero 2W, pending hardware review and budget
+- Power: one properly rated main source with protected motor/electronics branches, sized after identifying installed motors
 
-## Future hardware
-
-- Final robotic arm servos/actuators and suitable motor driver(s)
-- Dedicated properly rated actuator power supply and electrical protection
-- Mechanical limits, emergency stop and safe enclosure as appropriate
-
-Only a **single unloaded SG90** was tested. Final arm hardware is not yet purchased/accessed/validated.
+See [integration plan](integration_plan.md) and [bill of materials](bill_of_materials.md). The prototype's servo supply sometimes appears unreliable after repeated movement; its exact cause has not been established.
