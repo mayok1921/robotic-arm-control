@@ -1,8 +1,8 @@
 # Portable USB development — Orange Pi Zero 2W + Windows
 
-**Verified October 13, 2026.** Direct USB networking works from a Windows laptop to an Orange Pi Zero 2W running Armbian, using VS Code Remote-SSH. We tested SSH over USB, reboot persistence on the Orange Pi, and continued terminal access after disabling the Orange Pi's Wi-Fi.
+**Verified October 13, 2026.** Direct USB networking works from a Windows laptop to an Orange Pi Zero 2W running Armbian, using ordinary SSH and SCP; VS Code Remote-SSH also connected during early experiments but is **no longer recommended** on this 1GB device. We tested SSH over USB, reboot persistence on the Orange Pi, and continued terminal access after disabling the Orange Pi's Wi-Fi.
 
-This is a **network-over-USB** connection, not USB mass-storage flashing. Editing code works through SSH/VS Code; there is no need to remove the microSD card for routine updates.
+This is a **network-over-USB** connection, not USB mass-storage flashing. Edit in **local Windows VS Code**, transfer with SCP, and run via terminal SSH; there is no need to remove the microSD card for routine updates.
 
 ## What worked
 
@@ -13,7 +13,7 @@ This is a **network-over-USB** connection, not USB mass-storage flashing. Editin
 - Orange Pi USB network interface: `usb0`, static address `192.168.7.2/24`
 - Windows RNDIS network adapter: **Ethernet 6** on the test laptop, static address `192.168.7.1/24`
 - SSH login: `ssh <your-orange-pi-username>@192.168.7.2` (actual test username: `mayok1921`)
-- VS Code **Remote - SSH** connected to `192.168.7.2`
+- VS Code **Remote - SSH** connected to `192.168.7.2` during initial experiments; **use local VS Code + SCP/SSH instead** to save Orange Pi memory
 - Wi-Fi on Orange Pi disabled for test: `sudo nmcli radio wifi off`; remote terminal still responded.
 
 **Important:** USB0/USB1 are hardware functions, not interchangeable labels. Confirm the board's printed labeling and authoritative pin/port diagram when replicating this on a different board revision. During investigation, connecting the Windows cable to the other port led to `not attached` and no detected Windows device. Swapping the USB-C port assignments resolved USB enumeration.
