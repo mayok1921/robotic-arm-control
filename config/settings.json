@@ -1,0 +1,10 @@
+{
+  "serial": {"port": "/dev/ttyACM0", "baudrate": 9600},
+  "servo": {"min_angle": 45, "max_angle": 135, "initial_angle": 90},
+  "control": {
+    "axis": 0,
+    "deadzone": 0.20,
+    "degrees_per_second": 60.0,
+    "update_interval_seconds": 0.02
+  }
+}
