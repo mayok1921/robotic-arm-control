@@ -38,3 +38,7 @@ See [USB setup](usb_development_setup.md). Do not use unverified power combinati
 - Motor-power emergency stop, fuses, DC/DC rails and protection sized from the electrical-load worksheet rather than the personal SG90 test
 
 See [electrical load plan](electrical_load_plan.md), [integration plan](integration_plan.md) and [bill of materials](bill_of_materials.md).
+
+## Existing project source
+
+See the predecessor team's Spring 2026 ME 416 final report in Google Drive, *Robotic Arm for Removal of Glovebox HEPA Filter*, for the original motor selections, wiring diagram, BOM and high-power servo thermal analysis. Treat the report as the design baseline, not as confirmation that the physical arm remains unchanged.
