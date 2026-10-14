@@ -1,27 +1,40 @@
 # Hardware inventory and proposed robot integration
 
-## Verified personal bench hardware (not intended for group robot installation)
+## Personal bench hardware — verified
 
-- Orange Pi Zero 2W (1GB) with Armbian Linux
-- Xbox wireless controller over Bluetooth
-- ELEGOO Arduino UNO R3, USB serial `/dev/ttyACM0` during testing
-- Single unloaded SG90 servo, with orange signal on Arduino D9, red to Arduino 5V and brown to GND for bench only
-- USB hub, data cables, jumper wires
-- Windows laptop using local VS Code and USB Ethernet/RNDIS + SSH/SCP
+- Orange Pi Zero 2W (1GB) with Armbian Linux; Xbox controller over Bluetooth
+- Personal ELEGOO Arduino UNO R3 with an unloaded SG90 test servo
+- Orange Pi USB0 to Windows laptop by USB/RNDIS; USB1 host to Arduino via hub
+- Windows laptop runs VS Code **locally**, transferring files with SCP and testing via lightweight SSH
 
-## USB port roles
+**Personal equipment is not earmarked for installation on the group's robot.**
 
-- **USB0 (USB gadget):** USB-C connection to laptop; `usb0` IP `192.168.7.2/24`
-- **USB1 (USB host):** USB hub to Arduino
+## Existing glovebox robotic arm — documented, physically reconfirm before energizing
 
-Do not assume the two connectors are interchangeable or that all multi-source powering combinations are safe. See [USB guide](usb_development_setup.md).
+The original **Spring 2026 ME 416 final report** describes the inherited arm. It is more useful than treating installed hardware as wholly unknown.
 
-## Group robot
+- High-torque motors: **DOCYKE S550 high-power servo family**, approximately **550 kg·cm advertised torque**; the prior project described high-power servos on the major joints. Earlier hardware inventory indicates **four high-torque servos**; confirm count and installed labels on the current arm.
+- Low-torque servos: about **80 kg·cm advertised torque** on smaller joints/gripper, reportedly **two smaller servos**; verify part numbers and counts.
+- Power discussed in project history: **SE-1200-24-class 24 V, 50 A, 1,200 W supply**; verify unit label, present wiring and actual condition before reuse. This rating is **maximum supply capability, not measured robot draw**.
+- Earlier team documents **Arduino-based servo control** and later **ESP32 + PS5 DualSense** wireless operation. The current team reports the inherited Arduino is available. Confirm exact board model and whether the ESP32 or other control electronics are still installed.
+- Predominantly 3D-printed mechanical structure and gripper; servo loading and mechanical limits must be evaluated before commanding motion.
 
-- Existing Arduino: **model to be identified**
-- Existing robot motors: **models and quantities to be identified; reuse intended**
-- Existing motor drivers, sensors and power supply: **unknown**
-- Dedicated SBC: likely Orange Pi Zero 2W, pending hardware review and budget
-- Power: one properly rated main source with protected motor/electronics branches, sized after identifying installed motors
+**Electrical safety:** Neither the 24V rail nor an RC-style 5V PWM control signal may be assumed suitable for *every* installed servo. Check each motor's true operating voltage, signal interface, and current using the manufacturer documentation and the actual installed labeling. The reported high-power stall current can be tens of amperes; do not test stall on an assembled arm.
 
-See [integration plan](integration_plan.md) and [bill of materials](bill_of_materials.md). The prototype's servo supply sometimes appears unreliable after repeated movement; its exact cause has not been established.
+Source: [Spring 2026 ME 416 final report](https://docs.google.com/document/d/1urSUX6SLoGXcrml9DO4g4pWCwH8FJFKZ/edit) (including motor specifications, torque/thermal analysis, wiring diagram and original BOM).
+
+## USB port roles on the personal Orange Pi
+
+- USB0 (gadget): direct laptop development over `192.168.7.2/24`
+- USB1 (host): hub to Arduino
+
+See [USB setup](usb_development_setup.md). Do not use unverified power combinations on the USB-C ports.
+
+## Planned dedicated hardware
+
+- Dedicated SBC: Orange Pi Zero 2W **candidate**, subject to available power, USB host and support requirements
+- Reuse the inherited Arduino and installed motors if compatible
+- Keep existing power supply **only after** evaluating demand, protection, output rails, condition and wiring
+- Motor-power emergency stop, fuses, DC/DC rails and protection sized from the electrical-load worksheet rather than the personal SG90 test
+
+See [electrical load plan](electrical_load_plan.md), [integration plan](integration_plan.md) and [bill of materials](bill_of_materials.md).
