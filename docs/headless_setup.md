@@ -1,24 +1,25 @@
-# Headless development — verified USB method
+# Headless development — recommended local VS Code workflow
 
-**Status (October 13, 2026):** Wired USB SSH/VS Code from Windows to Orange Pi Zero 2W works **without Orange Pi Wi-Fi**. USB networking reconnected after reboot; automatic robot application startup is **not yet configured**.
+**Verified October 13, 2026:** Windows laptop communicates directly with the Orange Pi Zero 2W via USB/RNDIS at `192.168.7.2`, even with the Orange Pi Wi-Fi disabled. The `robotarm-usb.service` persists the gadget IP across Orange Pi reboots. The robot application itself does **not** autostart yet.
 
-Follow the complete [portable USB development instructions](usb_development_setup.md).
+## Recommended approach
 
-## Proven workflow
+1. Open your **local Windows** clone of `robotic-arm-control` in VS Code.
+2. Edit Python on the laptop. Keep Pylance and other editor extensions **off the Orange Pi**.
+3. In the **local VS Code PowerShell terminal**, run:
+   ```powershell
+   scp .\servo_control.py mayok1921@192.168.7.2:/home/mayok1921/robotic_arm/servo_control.py
+   ssh mayok1921@192.168.7.2
+   ```
+4. In SSH, run `cd ~/robotic_arm && python3 servo_control.py` with the matching legacy sketch on the bench Arduino.
+5. To test experimental files later, use [`scripts/deploy.ps1`](../scripts/deploy.ps1), flash matching v2 Arduino firmware independently, and run `python3 -m src.control`.
 
-1. Connect Windows laptop with a data cable to the **USB0 gadget-capable USB-C port** on Orange Pi.
-2. Orange Pi uses `g_ether`, the `usb0` interface, and `192.168.7.2/24` via an enabled systemd service.
-3. Windows recognizes **USB Ethernet/RNDIS Gadget** after installing a matching signed RNDIS driver; its USB network adapter uses `192.168.7.1/24`.
-4. Connect `ssh mayok1921@192.168.7.2` from Windows, or use VS Code Remote-SSH and select Linux.
-5. Open `~/robotic_arm`, edit files and run Python. The Arduino may remain on the separate Orange Pi USB1 port via a hub.
+**Do not use VS Code Remote-SSH as the standard development environment.** Previous Pylance, extension host and related server processes were consuming hundreds of MiB of RAM; killing those processes increased available RAM from ~284 MiB to ~667 MiB. Regular terminal SSH works without running remote editor services.
 
-USB Wi-Fi-free access was verified with the Orange Pi Wi-Fi radio disabled and a responsive SSH terminal. No local TV/keyboard needed for normal development when the USB connection works.
+See [complete USB setup](usb_development_setup.md) for the correct USB-C ports, RNDIS driver binding, static IPv4 addresses, troubleshooting and persistence.
 
-## Further work
+## Still to do
 
-- Test clean power-on/off and Windows laptop reboot persistence.
-- Set up authorized per-developer SSH keys, recovery and onboarding.
-- Define safe automatic startup for robot program (separate from USB networking).
-- Verify stability with servos/controllers attached; never power a loaded arm from Arduino 5V.
-
-Original investigation found that using the wrong physical USB-C port leaves the Linux gadget `not attached`, even while `g_ether` is loaded. Refer to the full guide rather than changing kernel/device-tree files.
+- Independently test normal boot after power cycling laptop and Orange Pi.
+- Configure safe, **separate** robot controller autostart only after behavior on input loss is verified.
+- Support additional developer machines using their own SSH account/key credentials and network drivers.
