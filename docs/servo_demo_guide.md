@@ -87,13 +87,13 @@ Move the **left joystick horizontally**:
 
 | Input | Servo target |
 | --- | --- |
-| Full left | approximately 45° |
-| Center | 90° |
-| Full right | approximately 135° |
+| Full left | Rotate toward 45° while held |
+| Center | Stop motion and hold last commanded angle |
+| Full right | Rotate toward 135° while held |
 
-The script sends a new angle when it changes, uses a small joystick deadzone, and exits with **Ctrl+C**. The tested setup successfully moved the servo with the wireless joystick.
+The updated Python script uses velocity-based joystick control, sends a new integer angle when it changes, applies a joystick deadzone, and exits with **Ctrl+C**. The tested setup moved the servo with the wireless joystick, but extended runs sometimes ended with physical servo motion stopping unexpectedly. Confirm the deployed deadzone value before comparing tests.
 
-The demo uses axis index `0` and port `/dev/ttyACM0`. Confirm and adapt these values if your device mapping differs. It controls **position**, not calibrated servo speed.
+The demo uses axis index `0` and port `/dev/ttyACM0`. Confirm and adapt these values if your device mapping differs. It sends **position commands** to a hobby servo at a joystick-controlled *commanded rate*; this is not closed-loop measurement or calibrated physical servo speed.
 
 ## 6. Current limitations and next work
 
@@ -101,7 +101,8 @@ The demo uses axis index `0` and port `/dev/ttyACM0`. Confirm and adapt these va
 - **USB networking is now verified**: Windows connects over USB0 to the Orange Pi at `192.168.7.2` using SSH/VS Code, while Arduino remains connected through a USB hub on USB1. See [portable USB setup](usb_development_setup.md).
 - Hardware safety features, lost-controller behavior, communications watchdog, and validated joint limits are **not yet implemented**. Do not use this prototype to drive a loaded robotic arm.
 - The D-pad mapping needs further testing.
-- The Orange Pi previously experienced freezes while using VS Code Remote-SSH; system stability needs additional testing.
+- The Orange Pi previously experienced freezes while using VS Code Remote-SSH. On October 13, leftover Pylance/remote extension processes were consuming hundreds of MiB; stopping them improved available RAM from 284 MiB to 667 MiB and reduced swap used from 460 MiB to 63 MiB. Develop in local Windows VS Code and upload over USB SCP instead.
+- Repeated servo exercise sometimes resulted in physical motion stopping while the cause remained undiagnosed. Arduino 5V from the Orange Pi USB hub may be marginal for the SG90; supply adequacy has not been tested. Avoid 9V directly on the servo, use a suitable regulated servo supply if necessary, and connect grounds correctly.
 
 ## Verified signal path
 
