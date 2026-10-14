@@ -1,6 +1,6 @@
 # Bluetooth controller pairing and reconnect workflow
 
-**Status: Planned — not yet implemented as a Python utility.** The existing Xbox controller was successfully paired and connected manually using `bluetoothctl`, and automatic reconnection was observed. The numbered selection interface and physical button are future work.
+**Status: Planned — not yet implemented as a Python utility.** The existing Xbox controller was successfully paired and connected manually using `bluetoothctl`, and automatic reconnection was observed. The number-or-name selection interface and physical button are future work.
 
 ## Intended user experience
 
@@ -29,7 +29,7 @@ Scanning for Bluetooth devices...
 2. Xbox Elite Wireless Controller
 3. Another Bluetooth device
 
-Choose device number: 1
+Select device (number or name): Xbox Wireless Controller
 Pairing...
 Connected; device trusted for future connections.
 ```
@@ -37,7 +37,7 @@ Connected; device trusted for future connections.
 Expected behavior:
 
 - Show nearby devices with readable names, and a distinguishing abbreviated address for similarly named devices.
-- Let the user select by **number**, without typing a Bluetooth MAC address.
+- Let the user select by **number or the device's displayed Bluetooth name**, without typing a Bluetooth MAC address. Exact names are accepted when unambiguous; if names are duplicated, ask for a number instead.
 - Support rescanning, canceling, and helpful error messages.
 - Pair, trust and connect to the selected device using the system Bluetooth service.
 - Prefer previously paired controller when appropriate; do not reprompt at every boot.
@@ -61,7 +61,7 @@ A physical **Pair** button could launch discovery and pairing mode. An LED could
 ## Next steps
 
 1. Create and locally review `bluetooth_pair.py` on the Windows laptop (no VS Code Remote-SSH needed).
-2. Upload the utility over working USB SSH/SCP and test discovery and numeric selection.
+2. Upload the utility over working USB SSH/SCP and test discovery and selection by number or name.
 3. Validate new controller pairing and reboot reconnection; record exact results and known limitations.
 4. Later evaluate a physical pairing button/LED.
 
