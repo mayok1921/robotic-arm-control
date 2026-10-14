@@ -1,6 +1,6 @@
 # Bluetooth controller pairing and reconnect workflow
 
-**Status: Planned — not yet implemented as a Python utility.** The existing Xbox controller was successfully paired and connected manually using `bluetoothctl`, and automatic reconnection was observed. The number-or-name selection interface and physical button are future work.
+**Status: experimental Python utility created locally on the Windows laptop and transferred to the Orange Pi; discovery/selection interface tested, but new-device pairing is not verified and the prototype has not yet been committed to GitHub.** The existing Xbox controller was successfully paired and connected manually using `bluetoothctl`, and automatic reconnection was observed. Selecting by number or name is the intended interface; the physical button remains future work.
 
 ## Intended user experience
 
@@ -60,7 +60,7 @@ A physical **Pair** button could launch discovery and pairing mode. An LED could
 
 ## Next steps
 
-1. Create and locally review `bluetooth_pair.py` on the Windows laptop (no VS Code Remote-SSH needed).
+1. Review and improve the locally created `bluetooth_pair.py`, verify actual connected state after pairing, and commit a tested version (no VS Code Remote-SSH needed).
 2. Upload the utility over working USB SSH/SCP and test discovery and selection by number or name.
 3. Validate new controller pairing and reboot reconnection; record exact results and known limitations.
 4. Later evaluate a physical pairing button/LED.
