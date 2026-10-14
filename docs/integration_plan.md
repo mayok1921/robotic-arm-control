@@ -1,6 +1,6 @@
 # Main robotic arm integration plan
 
-**Status:** Planning only. Actual robot electrical specifications and motor models have not been supplied yet.
+**Status:** Planning. The predecessor Spring 2026 ME 416 final report identifies DOCYKE S550 high-torque servos, smaller servos, Arduino-based controls and a previous ESP32/PS5 configuration. Reported 24V / 50A main supply and motor counts still require physical verification.
 
 ## Scope
 
@@ -12,11 +12,11 @@ The Orange Pi, Arduino and SG90 currently used for development are **personal be
 | --- | --- |
 | Group Arduino model and available I/O | Unknown |
 | Number of joints and degrees of freedom | Unknown |
-| Motor model / type / quantity per joint | Unknown |
+| Motor model / type / quantity per joint | Earlier documentation: DOCYKE S550-class high-power servos and smaller ~80 kg.cm servos; confirm installed labels and counts |
 | Rated voltage, running/stall current, torque | Unknown |
 | Motor drivers already on the robot | Unknown |
 | Feedback: encoders, potentiometers, limits | Unknown |
-| Existing supply voltage and current rating | Unknown |
+| Existing supply voltage and current rating | Earlier report: 24V / 50A (1200W), pending nameplate confirmation |
 | Required motion range, gear ratios, payload | Unknown |
 | Preferred one-cord vs battery power arrangement | One primary source preferred; source type undecided |
 
@@ -28,7 +28,7 @@ Do not assume the robot uses hobby RC servos simply because the bench prototype 
 2. **Software safety:** validate new serial protocol on a *single unloaded servo*; check correct response to garbage data, unplugged Arduino, and disconnected controller.
 3. **Multi-joint abstraction:** create a joint interface that supports different actuator types and configurable limits. Do not energize all joints at once.
 4. **Dedicated hardware:** prepare SBC image, Bluetooth, USB and Arduino deployment on nonpersonal hardware.
-5. **Electrical design:** select drivers and protected single-source power distribution based on actual current/voltage measurements and motor specs. Separate motor-power cutoff from SBC shutdown where appropriate.
+5. **Electrical design:** complete [preliminary electrical load assessment](electrical_load_plan.md), then evaluate drivers and protected single-source power distribution based on actual current/voltage measurements and motor specs. Separate motor-power cutoff from SBC shutdown where appropriate.
 6. **Bench bring-up:** power and test each motor/driver independently with mechanical loads safely supported; add feedback, calibration, limits and emergency stop.
 7. **Whole arm:** test startup, watchdogs, stop behavior, unexpected disconnect, brownout and operator stop under controlled conditions.
 
