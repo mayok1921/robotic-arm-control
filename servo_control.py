@@ -11,7 +11,7 @@ servo_port = "/dev/ttyACM0"
 servo_pin_min = 45
 servo_pin_max = 135
 servo_speed = 60  # degrees per second
-deadzone = 0.12
+deadzone = 0.20
 update_interval = 0.02
 
 def apply_deadzone(value):
