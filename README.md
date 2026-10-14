@@ -1,6 +1,6 @@
 # Robotic Arm Control System
 
-Portable robotic-arm controller based on an **Xbox wireless controller → Orange Pi → USB serial → Arduino → actuators**.
+Robotic-arm controller based on an **Xbox wireless controller → Orange Pi → USB serial → Arduino → actuators**.
 
 **Project intent:** The Orange Pi, Arduino UNO and unloaded SG90 used in the demonstration are **personal development hardware**. The group's robot already has an Arduino and motors; **reuse those components** and purchase dedicated computer/control hardware only where needed.
 
