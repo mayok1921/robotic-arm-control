@@ -97,8 +97,8 @@ The demo uses axis index `0` and port `/dev/ttyACM0`. Confirm and adapt these va
 
 ## 6. Current limitations and next work
 
-- Automatic startup and offline software updates are **not yet configured**.
-- USB networking between Windows and the Orange Pi is **not verified**; current remote development uses SSH over Wi-Fi, which is not required to *run* the joystick-to-servo demo after setup.
+- Automatic startup of the **robot application** is **not yet configured**; direct, Wi-Fi-free USB development access is now configured and tested after an Orange Pi reboot.
+- **USB networking is now verified**: Windows connects over USB0 to the Orange Pi at `192.168.7.2` using SSH/VS Code, while Arduino remains connected through a USB hub on USB1. See [portable USB setup](usb_development_setup.md).
 - Hardware safety features, lost-controller behavior, communications watchdog, and validated joint limits are **not yet implemented**. Do not use this prototype to drive a loaded robotic arm.
 - The D-pad mapping needs further testing.
 - The Orange Pi previously experienced freezes while using VS Code Remote-SSH; system stability needs additional testing.
