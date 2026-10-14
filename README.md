@@ -13,6 +13,7 @@ Portable robotic arm control prototype using an **Orange Pi Zero 2W**, an **Xbox
 - **[Portable, Wi-Fi-free USB development setup](docs/usb_development_setup.md)** — correct USB ports, Windows RNDIS driver workaround, static IPs, SSH, VS Code, boot persistence and troubleshooting
 - **[Servo-control demonstration](docs/servo_demo_guide.md)** — SG90 wiring, Arduino firmware, Python joystick script, test instructions
 - **[Development log](docs/development_log.md)** — decisions, verified results, and limitations
+- **[Bluetooth pairing design](docs/bluetooth_pairing_design.md)** — planned numbered device selector and eventual physical pairing button
 
 ## Architecture
 
@@ -45,8 +46,9 @@ Final robotic arm motors, drivers and motor power supply remain to be chosen or 
 3. ~~Move SG90 with Bluetooth Xbox joystick.~~
 4. ~~Establish and test laptop-to-Orange-Pi USB networking without Orange Pi Wi-Fi, including reboot.~~
 5. **Next: improve servo command parsing, failsafes and smooth joystick control.**
-6. Validate offline access after complete power cycles and Windows reboot; test second developer's laptop.
-7. Configure safe automatic startup of robotic-arm controller.
-8. Integrate actual arm actuators and properly rated motor power supply, then validate mechanical safety.
+6. Implement an on-demand numbered Bluetooth device pairing utility; later add a physical pair button.
+7. Validate offline access after complete power cycles and Windows reboot; test second developer's laptop.
+8. Configure safe automatic startup of robotic-arm controller.
+9. Integrate actual arm actuators and properly rated motor power supply, then validate mechanical safety.
 
 **Status:** Working portable development link and bench servo-control prototype. Not a finished or safety-qualified robotic arm.
