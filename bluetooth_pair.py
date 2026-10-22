@@ -145,7 +145,7 @@ def joystick_handlers(controller_name=None):
 
 def hid_diagnostics():
     """Read-only local diagnosis; never modify kernel drivers or Bluetooth bonds."""
-    print("\\nAutomatic HID diagnostic:")
+    print("\nAutomatic HID diagnostic:")
     print("  Kernel:", os.uname().release)
     for name in ("hidp", "uhid", "hid_playstation", "hid_generic", "joydev"):
         module = Path("/sys/module") / name
@@ -167,7 +167,7 @@ def hid_diagnostics():
     if config.is_file():
         try:
             contents = config.read_text(errors="replace")
-            match = re.search(r"(?im)^\\s*ClassicBondedOnly\\s*=\\s*(true|false)", contents)
+            match = re.search(r"(?im)^\s*ClassicBondedOnly\s*=\s*(true|false)", contents)
             print("  BlueZ ClassicBondedOnly:", match.group(1) if match else "default (true)")
         except OSError:
             print("  BlueZ input.conf: unreadable")
@@ -322,7 +322,7 @@ def connect(address, name, retries=1):
     # Paired is not the same as bonded. BlueZ usually requires a stored
     # Bluetooth bond before its input profile will expose HID events.
     if info.get("paired") and info.get("bonded") is False:
-        print("\\nThis controller is paired but NOT bonded.")
+        print("\nThis controller is paired but NOT bonded.")
         print("BlueZ may refuse joystick input from an unbonded controller.")
         print("The program can forget and re-pair ONLY this selected controller.")
         print("This does not alter the Xbox pairing or change kernel settings.")
