@@ -1,68 +1,56 @@
-# Bluetooth controller pairing and reconnect workflow
+# Bluetooth controller pairing and reconnection
 
-**Status: experimental Python utility created locally on the Windows laptop and transferred to the Orange Pi; discovery/selection interface tested, but new-device pairing is not verified and the prototype has not yet been committed to GitHub.** The existing Xbox controller was successfully paired and connected manually using `bluetoothctl`, and automatic reconnection was observed. Selecting by number or name is the intended interface; the physical button remains future work.
+## Current status (October 22, 2026)
 
-## Intended user experience
+- The earlier pairing utility detected devices and reported a PS5 DualSense connection, but later the PS5 controller was absent from BlueZ's paired-device list.
+- On the Orange Pi, Linux listed only `dw_hdmi` in `/proc/bus/input/devices` and no `/dev/input/js*`. The kernel has `CONFIG_INPUT_JOYDEV=y`, but `modinfo hid_playstation` failed and `CONFIG_HID_SONY` is disabled. The complete PlayStation driver state has not been established.
+- **The upgraded `bluetooth_pair.py` has been checked in and its core parsers/verification behavior tested with software mocks, but live DualSense pairing and input recognition with this new revision remain unverified.** A successful Bluetooth connection alone does not establish that controller input is available.
 
-### Normal operation (no laptop required)
-
-1. Power on Orange Pi / robot.
-2. Turn on an already paired and trusted Xbox controller.
-3. Bluetooth reconnects automatically.
-4. Once controller inputs are available, the robot controller becomes ready.
-
-**No Bluetooth scan, pairing prompt, laptop, or Wi-Fi should be required on every startup.**
-
-### Add or switch a controller (only when requested)
-
-From the Windows laptop's **local** VS Code environment, upload an independent `bluetooth_pair.py` utility over the existing USB SSH connection, then run it on the Orange Pi:
+## Running from the Orange Pi (over USB SSH)
 
 ```bash
+cd ~/robotic_arm
 python3 bluetooth_pair.py
 ```
 
-Proposed interaction:
+Put a new DualSense into pairing mode with **Create + PS** until the light flashes rapidly. Select a listed device by number, exact displayed name, or Bluetooth MAC address. If multiple devices use the name `Wireless Controller`, select by number. Type `r` to rescan or `q` to cancel.
 
-```text
-Scanning for Bluetooth devices...
-1. Xbox Wireless Controller
-2. Xbox Elite Wireless Controller
-3. Another Bluetooth device
+The tool scans, checks the controller's state, pairs if needed, trusts it, attempts connection, and then **rechecks** `Paired: yes`, `Trusted: yes`, and `Connected: yes`. It reports controller-like Linux input devices **separately**. The scan list can contain previously discovered/cached devices.
 
-Select device (number or name): Xbox Wireless Controller
-Pairing...
-Connected; device trusted for future connections.
+### Optional commands
+
+```bash
+python3 bluetooth_pair.py --list
+python3 bluetooth_pair.py --diagnose
+python3 bluetooth_pair.py --scan-seconds 20
+python3 bluetooth_pair.py --retries 2
+python3 bluetooth_pair.py --reconnect AA:BB:CC:DD:EE:FF
 ```
 
-Expected behavior:
+Replace the example MAC with the address for a controller you've already paired. `--diagnose` reports adapter information, kernel config indicators, and Linux input devices without pairing or motor activity. Do not commit actual controller addresses or credentials.
 
-- Show nearby devices with readable names, and a distinguishing abbreviated address for similarly named devices.
-- Let the user select by **number or the device's displayed Bluetooth name**, without typing a Bluetooth MAC address. Exact names are accepted when unambiguous; if names are duplicated, ask for a number instead.
-- Support rescanning, canceling, and helpful error messages.
-- Pair, trust and connect to the selected device using the system Bluetooth service.
-- Prefer previously paired controller when appropriate; do not reprompt at every boot.
-- Keep pairing UI separate from `servo_control.py` so normal robot operation never waits for text input.
-- Avoid storing Bluetooth addresses or personal credentials in source code or Git history.
-- Ensure a disconnected controller cannot cause unintended actuator movement; safe disconnect handling belongs in the eventual motor-control system.
+## What success means
 
-Proposed implementation: invoke BlueZ via `bluetoothctl` from Python with robust command handling, timeouts and parsing; verify compatibility on the Orange Pi's installed Armbian/BlueZ version before claiming the tool works.
+1. **Pairing:** `Paired: yes` is confirmed after the pair command.
+2. **Trust:** `Trusted: yes` is confirmed, helping future reconnect attempts.
+3. **Bluetooth link:** `Connected: yes` is confirmed at the time of status check.
+4. **HID input:** Linux must separately create an appropriate `/dev/input/event*` and/or `/dev/input/js*` controller device, and a live test must demonstrate actual button/axis events.
+5. **Motor control:** Only after all of the above, and a separate actuator safety review, should joystick inputs be allowed to command motors.
 
-### Future no-laptop pairing option
+The script validates the first three and **reports candidate input devices** for the fourth. It cannot provide missing `hid_playstation` kernel functionality, prove reliable long-term wireless connectivity, or verify real button/axis motion. It does not control motors, modify controller firmware, or auto-start services.
 
-A physical **Pair** button could launch discovery and pairing mode. An LED could indicate scanning, connection success, or failure. This is a planned usability feature, not currently wired or implemented.
+## Troubleshooting the current PS5 problem
 
-## Existing verified Bluetooth notes
+If pairing seems to work but `bluetoothctl devices Paired` shows only the Xbox controller, run `python3 bluetooth_pair.py --diagnose` and attempt a fresh DualSense pairing while in flashing pairing mode. Follow the program's actual status output instead of relying on the previous version's optimistic success message.
 
-- Xbox controller previously paired/trusted over Bluetooth.
-- Pygame identified the Bluetooth-connected controller, with 6 axes and 16 buttons (the previous USB connection reported 6 axes and 11 buttons).
-- Reconnection was observed after powering controller off and on.
-- One controller is used for robot control; support for operating with multiple controllers simultaneously is **not** part of the current milestone.
+If Bluetooth shows connected but `/proc/bus/input/devices` has no DualSense input, investigate BlueZ HID registration and the Armbian kernel's PlayStation driver support separately. `uhid` being loaded and `joydev` being built in do **not** by themselves establish DualSense support.
 
-## Next steps
+## Development and safety notes
 
-1. Review and improve the locally created `bluetooth_pair.py`, verify actual connected state after pairing, and commit a tested version (no VS Code Remote-SSH needed).
-2. Upload the utility over working USB SSH/SCP and test discovery and selection by number or name.
-3. Validate new controller pairing and reboot reconnection; record exact results and known limitations.
-4. Later evaluate a physical pairing button/LED.
+- Keep this utility separate from `servo_control.py`. Never treat a Bluetooth connection as permission for a powered joint to move.
+- A powered robot needs independently engineered controller-loss handling, movement limits, and physical emergency stop.
+- The normal workflow should reconnect a trusted controller without a Bluetooth scan, but persistence and PS5 reconnection need real hardware validation.
+- Run offline unit tests from the repository root with `python3 -m unittest discover -s tests -v`.
+- A physical pairing button/LED and automated headless reconnection are **future features**, not implemented.
 
-See [portable USB development setup](usb_development_setup.md) and [servo demonstration](servo_demo_guide.md).
+See [USB development setup](usb_development_setup.md), [servo demonstration](servo_demo_guide.md), and [development log](development_log.md).
