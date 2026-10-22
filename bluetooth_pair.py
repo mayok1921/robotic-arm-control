@@ -163,6 +163,33 @@ def hid_diagnostics():
         print("  Kernel configuration file unavailable.")
     print("  Bluetooth can connect without exposing a usable Linux input device.")
     print("  If input remains absent, kernel/BlueZ HID support may require system-level repair.")
+    config = Path("/etc/bluetooth/input.conf")
+    if config.is_file():
+        try:
+            contents = config.read_text(errors="replace")
+            match = re.search(r"(?im)^\\s*ClassicBondedOnly\\s*=\\s*(true|false)", contents)
+            print("  BlueZ ClassicBondedOnly:", match.group(1) if match else "default (true)")
+        except OSError:
+            print("  BlueZ input.conf: unreadable")
+    else:
+        print("  BlueZ ClassicBondedOnly: default (true), unless configured elsewhere")
+    if shutil.which("journalctl"):
+        try:
+            logs = subprocess.run(
+                ["journalctl", "-u", "bluetooth", "--since", "-10 minutes",
+                 "--no-pager", "-o", "cat"],
+                capture_output=True, text=True, timeout=8
+            ).stdout
+            matches = [line.strip() for line in logs.splitlines()
+                       if re.search(r"(?i)bond|hidp|uhid|input|reject|auth|permission|fail", line)]
+            if matches:
+                print("  Recent Bluetooth service messages:")
+                for line in matches[-8:]:
+                    print("   ", line[:240])
+            else:
+                print("  No relevant Bluetooth service messages available.")
+        except (OSError, subprocess.TimeoutExpired):
+            print("  Bluetooth service logs unavailable.")
     print("  No kernel or system settings were changed.")
 
 
@@ -292,6 +319,28 @@ def pair_interactively(address, timeout=55):
 
 def connect(address, name, retries=1):
     info = state(address)
+    # Paired is not the same as bonded. BlueZ usually requires a stored
+    # Bluetooth bond before its input profile will expose HID events.
+    if info.get("paired") and info.get("bonded") is False:
+        print("\\nThis controller is paired but NOT bonded.")
+        print("BlueZ may refuse joystick input from an unbonded controller.")
+        print("The program can forget and re-pair ONLY this selected controller.")
+        print("This does not alter the Xbox pairing or change kernel settings.")
+        try:
+            approval = input("Repair this controller pairing now? [y/N]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            approval = "n"
+        if approval in ("y", "yes"):
+            bt("remove", address)
+            print("Selected controller pairing removed. Hold Create + PS")
+            print("until the DualSense flashes rapidly, then press Enter.")
+            try:
+                input()
+            except (EOFError, KeyboardInterrupt):
+                raise BTError("Pairing reset cancelled before re-pairing.")
+            info = {"paired": False}
+        else:
+            print("Retaining current pairing; continuing diagnostics.")
     if info.get("blocked"):
         raise BTError("Device is blocked; inspect Bluetooth settings.")
     if not info.get("paired"):
