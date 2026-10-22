@@ -133,7 +133,7 @@ def wait_for(address, key, value=True, seconds=6):
         time.sleep(0.7)
 
 
-def joystick_handlers():
+def joystick_handlers(controller_name=None):
     """Only count registered joystick nodes, not Bluetooth connection status."""
     return [(name, handlers) for name, handlers in input_devices()
             if re.search(r"\\bjs\\d+\\b", handlers)
@@ -177,7 +177,7 @@ def report(address, name, input_wait=10):
     print(f"\\nChecking Linux joystick registration (up to {input_wait} seconds)...")
     deadline = time.monotonic() + input_wait
     while True:
-        inputs = joystick_handlers()
+        inputs = joystick_handlers(name)
         if inputs:
             if not state(address).get("connected"):
                 print("RESULT: Bluetooth disconnected during input registration.")
