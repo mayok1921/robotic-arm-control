@@ -54,3 +54,11 @@ If Bluetooth shows connected but `/proc/bus/input/devices` has no DualSense inpu
 - A physical pairing button/LED and automated headless reconnection are **future features**, not implemented.
 
 See [USB development setup](usb_development_setup.md), [servo demonstration](servo_demo_guide.md), and [development log](development_log.md).
+
+## October 22, 2026 — Pairing-agent fix (pending live retest)
+
+During direct `bluetoothctl` testing, the DualSense advertised as **DualSense Wireless Controller** and BlueZ issued `Request authorization` / `[agent] Accept pairing (yes/no)`; after accepting, BlueZ reported `Connected: yes`, `Bonded: yes`, and `Paired: yes`. This shows the pairing workflow required an active authorization agent. **It does not conclusively show that our earlier Python program alone caused the failure or that Bluetooth HID input is working.**
+
+The previous Python utility used a short-lived one-shot `bluetoothctl pair` process. The new `pair_interactively` routine keeps a `bluetoothctl -a NoInputNoOutput` session alive with a terminal (Linux PTY), registers a pairing agent, and requests bonding for the chosen device. If BlueZ still asks to accept a pairing, the program presents that request and accepts only after the operator confirms; it never silently authorizes unknown nearby devices. It then checks the saved pairing state before trusting and connecting. The ordinary numbered-device selection remains unchanged.
+
+**This revision has not yet been live-tested against the user's DualSense.** From Windows local VS Code, `git pull origin main`, then `scp bluetooth_pair.py mayok1921@192.168.7.2:~/robotic_arm/`. On the Orange Pi, disconnect the PS5 USB cable, hold **Create + PS** to enter pairing mode, and run `python3 bluetooth_pair.py --scan-seconds 20`. Select the named DualSense, inspect any program-local authorization request, and verify `bluetoothctl info <address>` and `/proc/bus/input/devices` afterward. No Arduino or motors should be connected during the first test.
