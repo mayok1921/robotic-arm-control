@@ -70,3 +70,10 @@ Configured Armbian Linux on Orange Pi Zero 2W. Xbox controller detected over USB
 - Post-recovery verification: Windows adapter **Up**, IPv4 **`192.168.7.1/24`** (Manual, Preferred); Orange Pi `usb0` **UP**, IPv4 **`192.168.7.2/24`**; SSH login succeeded.
 - **Likely immediate cause:** host interface was on an incompatible subnet. **Unknown root cause:** why Windows had lost/not applied the previous static address; adapter enumeration changed, but causality was not established. A full Windows reboot persistence test remains pending.
 - Recovery procedure and diagnosis guide: [USB development setup](usb_development_setup.md#october-21-2026--repeat-connection-failure-windows-lost-the-expected-usb-adapter-ipv4-address).
+
+## October 22, 2026 — Bluetooth pairing utility upgrade (software only)
+
+- Updated `bluetooth_pair.py` to support rescanning, number/name/MAC selection, reconnecting a known device, retries, timeouts, status verification, device input detection, and diagnostics.
+- The tool no longer reports unqualified pairing success based only on `bluetoothctl` process exit; it re-reads `Paired`, `Trusted`, and `Connected` states, and explicitly distinguishes a Bluetooth link from Linux HID input readiness.
+- Added hardware-independent regression tests at `tests/test_bluetooth_pair.py` and updated the usage guide at `docs/bluetooth_pairing_design.md`.
+- **Not yet validated on Orange Pi hardware:** this revised pairing utility's actual DualSense pairing/reconnect operation. The PlayStation HID input device was still absent in earlier observations; kernel/BlueZ compatibility remains a separate issue. No servo or arm operations were changed.
