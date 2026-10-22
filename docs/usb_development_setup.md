@@ -183,3 +183,37 @@ Do **not** distribute the original SSH password. For other contributors, create 
 - Repeat onboarding with a second developer's laptop using its own SSH credentials.
 - Test prolonged stability when Xbox Bluetooth + Arduino USB + laptop USB are active simultaneously.
 - Establish a secure and documented initial provisioning/recovery method for future maintainers.
+
+## October 21, 2026 — Repeat connection failure: Windows lost the expected USB adapter IPv4 address
+
+**Observed symptoms:** Windows VS Code PowerShell `ssh mayok1921@192.168.7.2` initially timed out. The Orange Pi showed LED activity, but that alone did not confirm networking. Windows initially did not show the expected active USB network adapter; after the correct USB cable/port arrangement was restored, Windows detected **`Ethernet 7` — `USB Ethernet/RNDIS Gadget #2` — `Up`**. The name and number differed from the earlier `Ethernet 6` setup.
+
+**Actual network fault observed:** `Get-NetIPAddress -InterfaceAlias "Ethernet 7" -AddressFamily IPv4` returned `169.254.69.180/16` (Windows link-local autoconfiguration), not the intended `192.168.7.1/24`. The Orange Pi's static address was still `192.168.7.2/24`, so the host and device were on different subnets. The reason Windows no longer had the expected IPv4 setting is **not proven**; the new adapter instance/alias is one possibility.
+
+**Successful fix (Windows, PowerShell as Administrator):**
+
+```powershell
+Get-NetAdapter
+Get-NetIPAddress -InterfaceAlias "Ethernet 7" -AddressFamily IPv4
+New-NetIPAddress -InterfaceAlias "Ethernet 7" -IPAddress 192.168.7.1 -PrefixLength 24
+ping 192.168.7.2
+ssh mayok1921@192.168.7.2
+```
+
+Replace `Ethernet 7` with the **currently active RNDIS adapter name** from `Get-NetAdapter`; do not hard-code `Ethernet 6` or `Ethernet 7` across Windows instances. Before running `New-NetIPAddress`, check whether the correct address is already present to avoid duplicate-address errors. On this point-to-point USB interface no default gateway or DNS is required. Only change the intended USB gadget adapter, not Wi-Fi or the laptop's other Ethernet interfaces.
+
+**Verified after recovery:**
+
+- Windows `Ethernet 7` showed `USB Ethernet/RNDIS Gadget #2`, status `Up`.
+- `Get-NetIPAddress` showed `192.168.7.1`, `/24`, `PrefixOrigin: Manual`, `AddressState: Preferred`.
+- Ordinary terminal SSH reached the Orange Pi successfully.
+- On the Orange Pi, `ip -4 addr show usb0` showed `usb0` UP with `inet 192.168.7.2/24` and `valid_lft forever`.
+- During the initial address assignment Windows showed both ActiveStore and PersistentStore entries, but **persistence after a Windows restart was not tested** in this recovery.
+
+**Diagnosis rule:**
+
+1. If the RNDIS adapter is **absent**, first check the USB0 gadget port/cable and the RNDIS driver binding; see Sections 1–2 above. Do **not** assume every SSH timeout is an IP problem.
+2. If the RNDIS adapter is **Up** but Windows has a `169.254.x.x` address, inspect/restore its expected `192.168.7.1/24` static address.
+3. If the Windows address is already correct but SSH still fails, confirm `192.168.7.2/24` on Orange Pi `usb0`, check ping/SSH service, and retain a separate recovery access method.
+
+**Remaining check:** unplug/reconnect USB and reboot Windows to verify the manual adapter address stays assigned to the correct RNDIS instance. The cause of the interface renaming remains unresolved.
