@@ -17,7 +17,7 @@ from pathlib import Path
 
 MAC = re.compile(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 DEVICE = re.compile(r"^Device\s+((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})\s+(.+)$")
-FIELD = re.compile(r"^\s*(Paired|Trusted|Connected|Blocked):\s*(yes|no)\s*$", re.I | re.M)
+FIELD = re.compile(r"^\s*(Paired|Bonded|Trusted|Connected|Blocked):\s*(yes|no)\s*$", re.I | re.M)
 GAMEPAD = re.compile(r"dualsense|wireless controller|playstation|sony|xbox|gamepad", re.I)
 
 
@@ -133,21 +133,69 @@ def wait_for(address, key, value=True, seconds=6):
         time.sleep(0.7)
 
 
-def report(address, name):
-    info = state(address)
-    print(f"\nBluetooth status: {name} [{address}]")
-    for key in ("paired", "trusted", "connected", "blocked"):
-        print(f"  {key.title():10} {'yes' if info.get(key) else 'no/unknown'}")
-    inputs = input_devices()
-    if inputs:
-        print("\nGame-controller-like Linux inputs:")
-        for devname, handlers in inputs:
-            print(f"  {devname} — {handlers}")
-        print("Input node detected; test actual button/axis events separately.")
+def joystick_handlers():
+    """Only count registered joystick nodes, not Bluetooth connection status."""
+    return [(name, handlers) for name, handlers in input_devices()
+            if re.search(r"\\bjs\\d+\\b", handlers)
+            and any(Path("/dev/input").glob("js[0-9]*"))]
+
+
+def hid_diagnostics():
+    """Read-only local diagnosis; never modify kernel drivers or Bluetooth bonds."""
+    print("\\nAutomatic HID diagnostic:")
+    print("  Kernel:", os.uname().release)
+    for name in ("hidp", "uhid", "hid_playstation", "hid_generic", "joydev"):
+        module = Path("/sys/module") / name
+        print(f"  {name}: {'present (loaded or built-in)' if module.exists() else 'not exposed in /sys/module'}")
+    try:
+        config = Path("/boot/config-" + os.uname().release).read_text(errors="replace")
+    except OSError:
+        config = ""
+    if config:
+        for name in ("CONFIG_BT_HIDP", "CONFIG_UHID", "CONFIG_INPUT_JOYDEV",
+                     "CONFIG_HID_PLAYSTATION", "CONFIG_HID_SONY"):
+            match = re.search(r"^(?:" + name + r"=.*|# " + name + r" is not set)$", config, re.M)
+            print("  " + (match.group(0) if match else name + ": not listed"))
     else:
-        print("\nNo game-controller-like Linux input devices detected.")
-        print("Bluetooth connection does not prove that a PlayStation HID driver works.")
-    return all(info.get(k) for k in ("paired", "trusted", "connected"))
+        print("  Kernel configuration file unavailable.")
+    print("  Bluetooth can connect without exposing a usable Linux input device.")
+    print("  If input remains absent, kernel/BlueZ HID support may require system-level repair.")
+    print("  No kernel or system settings were changed.")
+
+
+def report(address, name, input_wait=10):
+    print(f"\\nBluetooth status: {name} [{address}]")
+    info = state(address)
+    for key in ("paired", "bonded", "trusted", "connected", "blocked"):
+        val = info.get(key)
+        print(f"  {key.title():10} {'yes' if val else 'no' if val is False else 'unknown'}")
+    if info.get("bonded") is False:
+        print("  WARNING: BlueZ reports Bonded: no; reconnection after restart may fail.")
+    if not all(info.get(k) for k in ("paired", "trusted", "connected")):
+        print("\\RESULT: Bluetooth setup incomplete.")
+        return False
+    print(f"\\nChecking Linux joystick registration (up to {input_wait} seconds)...")
+    deadline = time.monotonic() + input_wait
+    while True:
+        inputs = joystick_handlers()
+        if inputs:
+            if not state(address).get("connected"):
+                print("RESULT: Bluetooth disconnected during input registration.")
+                return False
+            for devname, handlers in inputs:
+                print(f"  {devname} — {handlers}")
+            print("RESULT: Bluetooth connected and Linux joystick node detected.")
+            print("IMPORTANT: Test actual input events before controlling motors.")
+            return True
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(0.5)
+    if not state(address).get("connected"):
+        print("RESULT: Bluetooth disconnected before input became available.")
+    else:
+        print("RESULT: Bluetooth connected, but NO usable Linux joystick was registered.")
+    hid_diagnostics()
+    return False
 
 
 def pair_interactively(address, timeout=55):
@@ -269,10 +317,10 @@ def connect(address, name, retries=1):
                 time.sleep(1)
     success = report(address, name)
     if success:
-        print("\nPaired, trusted and connected at time of check.")
+        print("\nController ready for joystick event testing.")
         print("IMPORTANT: controller HID input must still be tested before motor use.")
     else:
-        print("\nINCOMPLETE: paired/trusted/connected status was not fully verified.")
+        print("\nNOT READY: Bluetooth and joystick input requirements were not both met.")
     return success
 
 
@@ -331,7 +379,7 @@ def main(argv=None):
             return 0 if connect(address, name, args.retries) else 1
     except BTError as exc:
         print("ERROR:", exc, file=sys.stderr)
-        print("Check controller charge/pairing mode. Try --diagnose.", file=sys.stderr)
+        print("The program will report input/HID diagnostics when Bluetooth connects without joystick support.", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nCancelled.")
