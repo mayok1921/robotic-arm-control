@@ -173,7 +173,7 @@ def pair_interactively(address, timeout=55):
         slave = -1
 
         def send(command):
-            os.write(master, (command + "\\n").encode())
+            os.write(master, (command + "\n").encode())
 
         send("power on")
         send("agent NoInputNoOutput")
@@ -194,10 +194,10 @@ def pair_interactively(address, timeout=55):
                 if not chunk:
                     break
                 # Remove ANSI terminal color codes and control characters.
-                clean = re.sub(r"\\x1b\\[[0-9;]*[A-Za-z]", "", chunk)
+                clean = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", chunk)
                 recent = (recent + clean)[-6000:]
                 if "Accept pairing (yes/no)" in recent and not approved_prompt:
-                    print("\\nBlueZ requested pairing authorization.")
+                    print("\nBlueZ requested pairing authorization.")
                     print("Approve ONLY if the request is for the selected controller.")
                     try:
                         answer = input("Accept pairing request? [y/N]: ").strip().lower()
@@ -222,7 +222,7 @@ def pair_interactively(address, timeout=55):
     finally:
         if process and process.poll() is None:
             try:
-                os.write(master, b"quit\\n")
+                os.write(master, b"quit\n")
                 process.wait(timeout=2)
             except (OSError, subprocess.TimeoutExpired):
                 process.terminate()
