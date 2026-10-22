@@ -4,6 +4,9 @@
 No motor commands are sent. Requires bluetoothctl; no pip packages needed.
 """
 import argparse
+import errno
+import pty
+import select
 import os
 import re
 import shutil
@@ -147,16 +150,105 @@ def report(address, name):
     return all(info.get(k) for k in ("paired", "trusted", "connected"))
 
 
+def pair_interactively(address, timeout=55):
+    """Keep BlueZ pairing agent alive until the bond is confirmed.
+
+    Previous one-shot bluetoothctl invocation could exit before authorization.
+    NoInputNoOutput requests Just Works pairing; if BlueZ still asks for human
+    authorization, forward that request in this program rather than silently
+    approving unknown nearby devices.
+    """
+    if not MAC.fullmatch(address):
+        raise BTError("Invalid Bluetooth MAC address")
+    master, slave = pty.openpty()
+    process = None
+    recent = ""
+    try:
+        process = subprocess.Popen(
+            ["bluetoothctl", "-a", "NoInputNoOutput"],
+            stdin=slave, stdout=slave, stderr=slave,
+            close_fds=True, start_new_session=True
+        )
+        os.close(slave)
+        slave = -1
+
+        def send(command):
+            os.write(master, (command + "\\n").encode())
+
+        send("power on")
+        send("agent NoInputNoOutput")
+        send("default-agent")
+        send("pair " + address)
+        deadline = time.monotonic() + timeout
+        last_check = 0.0
+        approved_prompt = False
+        while time.monotonic() < deadline:
+            readable, _, _ = select.select([master], [], [], 0.5)
+            if readable:
+                try:
+                    chunk = os.read(master, 4096).decode("utf-8", "replace")
+                except OSError as exc:
+                    if exc.errno == errno.EIO:
+                        break
+                    raise
+                if not chunk:
+                    break
+                # Remove ANSI terminal color codes and control characters.
+                clean = re.sub(r"\\x1b\\[[0-9;]*[A-Za-z]", "", chunk)
+                recent = (recent + clean)[-6000:]
+                if "Accept pairing (yes/no)" in recent and not approved_prompt:
+                    print("\\nBlueZ requested pairing authorization.")
+                    print("Approve ONLY if the request is for the selected controller.")
+                    try:
+                        answer = input("Accept pairing request? [y/N]: ").strip().lower()
+                    except (EOFError, KeyboardInterrupt):
+                        answer = "n"
+                    send("yes" if answer in ("y", "yes") else "no")
+                    approved_prompt = True
+                    recent = ""
+                if re.search(r"(?i)Failed to pair|AuthenticationFailed|AuthenticationCanceled", recent):
+                    raise BTError("BlueZ pairing failed: " + recent[-600:])
+            if process.poll() is not None:
+                break
+            now = time.monotonic()
+            if now - last_check >= 1:
+                last_check = now
+                try:
+                    if state(address).get("paired"):
+                        return True
+                except BTError:
+                    pass
+        return bool(state(address).get("paired"))
+    finally:
+        if process and process.poll() is None:
+            try:
+                os.write(master, b"quit\\n")
+                process.wait(timeout=2)
+            except (OSError, subprocess.TimeoutExpired):
+                process.terminate()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+        try:
+            os.close(master)
+        except OSError:
+            pass
+        if slave >= 0:
+            os.close(slave)
+
+
 def connect(address, name, retries=1):
     info = state(address)
     if info.get("blocked"):
         raise BTError("Device is blocked; inspect Bluetooth settings.")
     if not info.get("paired"):
         print("Pairing... (put controller in pairing mode)")
-        output = bt("pair", address, timeout=50)
-        ok, info = wait_for(address, "paired")
+        ok = pair_interactively(address)
         if not ok:
-            raise BTError("Pairing not verified: " + output)
+            raise BTError("Pairing not verified. Check controller pairing mode, charge, and BlueZ logs.")
+        info = state(address)
     if not info.get("trusted"):
         print("Trusting...")
         bt("trust", address)
