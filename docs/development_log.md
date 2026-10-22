@@ -61,3 +61,12 @@ Configured Armbian Linux on Orange Pi Zero 2W. Xbox controller detected over USB
 - **New firmware and runner are untested on hardware and must be tested as a matching pair**: old ASCII angle protocol and new `SET` acknowledgement protocol are incompatible. Static/pure tests do not establish safety of a loaded arm.
 - Main robot scope: group already owns an Arduino and motors, and the personal bench Orange Pi/Arduino/SG90 are not planned as final hardware. Purchasing decisions remain blocked on existing motor/driver model numbers and power specifications.
 - Local Windows VS Code + SCP + ordinary USB SSH remains the recommended development approach; old Remote-SSH usage is recorded only for historical context.
+
+## October 21, 2026 — USB SSH reconnection failure and recovery
+
+- Windows SSH to `192.168.7.2` timed out. Once connected correctly, `Get-NetAdapter` listed **`Ethernet 7` / `USB Ethernet/RNDIS Gadget #2`**, status **Up**; previous documentation had used **Ethernet 6**.
+- `Get-NetIPAddress -InterfaceAlias "Ethernet 7" -AddressFamily IPv4` showed **`169.254.69.180/16`**, indicating Windows link-local address autoconfiguration rather than the expected static USB subnet.
+- In elevated Windows PowerShell, `New-NetIPAddress -InterfaceAlias "Ethernet 7" -IPAddress 192.168.7.1 -PrefixLength 24` successfully restored the host address. SSH then connected to the Orange Pi.
+- Post-recovery verification: Windows adapter **Up**, IPv4 **`192.168.7.1/24`** (Manual, Preferred); Orange Pi `usb0` **UP**, IPv4 **`192.168.7.2/24`**; SSH login succeeded.
+- **Likely immediate cause:** host interface was on an incompatible subnet. **Unknown root cause:** why Windows had lost/not applied the previous static address; adapter enumeration changed, but causality was not established. A full Windows reboot persistence test remains pending.
+- Recovery procedure and diagnosis guide: [USB development setup](usb_development_setup.md#october-21-2026--repeat-connection-failure-windows-lost-the-expected-usb-adapter-ipv4-address).
