@@ -232,7 +232,7 @@ def pair_interactively(address, timeout=55):
     """Keep BlueZ pairing agent alive until the bond is confirmed.
 
     Previous one-shot bluetoothctl invocation could exit before authorization.
-    NoInputNoOutput requests Just Works pairing; if BlueZ still asks for human
+    KeyboardDisplay supports explicit pairing authorization; if BlueZ still asks for human
     authorization, forward that request in this program rather than silently
     approving unknown nearby devices.
     """
@@ -243,7 +243,7 @@ def pair_interactively(address, timeout=55):
     recent = ""
     try:
         process = subprocess.Popen(
-            ["bluetoothctl", "-a", "NoInputNoOutput"],
+            ["bluetoothctl", "-a", "KeyboardDisplay"],
             stdin=slave, stdout=slave, stderr=slave,
             close_fds=True, start_new_session=True
         )
@@ -254,7 +254,7 @@ def pair_interactively(address, timeout=55):
             os.write(master, (command + "\n").encode())
 
         send("power on")
-        send("agent NoInputNoOutput")
+        send("agent KeyboardDisplay")
         send("default-agent")
         send("pair " + address)
         deadline = time.monotonic() + timeout
