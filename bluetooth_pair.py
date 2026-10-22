@@ -134,10 +134,13 @@ def wait_for(address, key, value=True, seconds=6):
 
 
 def joystick_handlers(controller_name=None):
-    """Only count registered joystick nodes, not Bluetooth connection status."""
+    """Check selected controller has a joystick node; another controller is insufficient."""
+    lower = (controller_name or "").lower()
+    expected = "dualsense" if "dualsense" in lower else "xbox" if "xbox" in lower else None
+    nodes = set(path.name for path in Path("/dev/input").glob("js[0-9]*"))
     return [(name, handlers) for name, handlers in input_devices()
-            if re.search(r"\\bjs\\d+\\b", handlers)
-            and any(Path("/dev/input").glob("js[0-9]*"))]
+            if any(token in nodes for token in re.findall(r"\\bjs\\d+\\b", handlers))
+            and (expected is None or expected in name.lower())]
 
 
 def hid_diagnostics():
