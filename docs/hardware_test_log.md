@@ -26,3 +26,12 @@ This log records direct observations separately from assumptions and future test
 **Desired control behavior:** Slight joystick deflection gives slow joint motion; larger deflection gives faster motion; release stops changing the joint target. Actual motor speed and stopping behavior must be verified before attaching a load.
 
 **Not yet verified:** loaded supply voltage, motor current, motor continuous torque, motor electrical compatibility, correct direction, control protocol, joystick-to-DOCYKE operation, or a safe stopped state under load.
+
+## 2026-10-25 — Multimeter identification
+
+- User supplied photograph of **INNOVA 3320 auto-ranging digital multimeter**.
+- Black test lead is photographed installed in center **COM** input; red lead is **not installed in the photo**.
+- Identified jacks: left **DC 10A** (labeled **unfused**, 10 A/15 sec max), center **COM**, right **V/Ω/mA** (200 mA max fused labeling visible).
+- For previously reported 24.1–24.2 V DC power-supply output, use **DCV**, black lead in COM and red lead in right V/Ω/mA input. Do not use DC mA or 10A sockets across an energized voltage source.
+- For continuity or resistance measurements, completely disconnect power and verify circuit is de-energized first.
+- No additional measurements or motor motion have been reported yet.
